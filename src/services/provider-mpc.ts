@@ -27,8 +27,9 @@ export const serviceProviderOptions = {
   },
 };
 
+console.log('MPC_STORE_URL', MPC_STORE_URL);
 export const storageLayerOptions = {
-  hostUrl: MPC_STORE_URL,
+  hostUrl: 'http://localhost:5051',
 };
 
 export enum MpcProviders {

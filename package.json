@@ -53,6 +53,7 @@
     "date-fns": "2.29.3",
     "decimal.js": "10.4.3",
     "deprecated-react-native-prop-types": "2.3.0",
+    "eciesjs": "^0.3.16",
     "events": "3.3.0",
     "https-browserify": "~0.0.0",
     "lottie-react-native": "5.1.5",

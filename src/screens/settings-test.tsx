@@ -1,7 +1,10 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 
+import {CUSTOM_JWT_TOKEN} from '@env';
 import Clipboard from '@react-native-clipboard/clipboard';
 import messaging from '@react-native-firebase/messaging';
+import BN from 'bn.js';
+import {PrivateKey, decrypt} from 'eciesjs';
 import {Alert, Linking, ScrollView} from 'react-native';
 
 import {Button, ButtonVariant, Input, Spacer, Text} from '@app/components/ui';
@@ -72,6 +75,41 @@ export const SettingsTestScreen = () => {
     console.log('remove', content);
   }, [iCloud]);
 
+  const requestShare = useCallback(async () => {
+    const token = await fetch(CUSTOM_JWT_TOKEN, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json, text/plain, */*',
+        'content-type': 'application/json;charset=UTF-8',
+      },
+      body: JSON.stringify({
+        email: 'andrey@haqq',
+      }),
+    });
+
+    const authState = await token.json();
+    const k1 = new PrivateKey();
+
+    const req = await fetch('http://localhost:8080', {
+      method: 'POST',
+      body: JSON.stringify({
+        id: 1,
+        jsonrpc: '2.0',
+        method: 'shareRequest',
+        params: [authState.idToken, k1.publicKey.toHex()],
+      }),
+    });
+
+    const response = await req.json();
+
+    const decrypted = decrypt(
+      k1.toHex(),
+      new Buffer(response.result.hex_share, 'base64'),
+    );
+
+    console.log('req', new BN(decrypted));
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
       {initialUrl && (
@@ -129,7 +167,7 @@ export const SettingsTestScreen = () => {
         onPress={() => removeICloudFile()}
         variant={ButtonVariant.contained}
       />
-
+      <Spacer height={8} />
       <Button
         title="Show captcha"
         onPress={async () => {
@@ -141,6 +179,12 @@ export const SettingsTestScreen = () => {
             Alert.alert('Error', err?.message);
           }
         }}
+        variant={ButtonVariant.contained}
+      />
+      <Spacer height={8} />
+      <Button
+        title="fetch share"
+        onPress={() => requestShare()}
         variant={ButtonVariant.contained}
       />
     </ScrollView>
